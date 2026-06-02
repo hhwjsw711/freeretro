@@ -1,15 +1,23 @@
 import { useEffect, useCallback, useReducer } from "react";
-import type { Card, Reaction, RetroUser, ServerMessage, ColumnId } from "../../types";
+import { DEFAULT_COLUMNS } from "../../types";
+import type { Card, Reaction, RetroUser, ServerMessage, ColumnId, RetroColumn } from "../../types";
 
 interface RetroState {
   cards: Card[];
+  columns: RetroColumn[];
   reactions: Reaction[];
   users: RetroUser[];
   loaded: boolean;
 }
 
 type RetroAction =
-  | { type: "state"; cards: Card[]; reactions: Reaction[]; users: RetroUser[] }
+  | {
+      type: "state";
+      cards: Card[];
+      columns: RetroColumn[];
+      reactions: Reaction[];
+      users: RetroUser[];
+    }
   | { type: "user:joined"; user: RetroUser }
   | { type: "user:left"; userId: string }
   | { type: "card:created"; card: Card }
@@ -18,6 +26,7 @@ type RetroAction =
   | { type: "card:moved"; card: Card }
   | { type: "card:grouped"; cardId: string; groupId: string }
   | { type: "card:ungrouped"; cardId: string; columnId: ColumnId; position: number }
+  | { type: "column:updated"; column: RetroColumn }
   | { type: "reaction:toggled"; cardId: string; reactions: Reaction[] };
 
 function reducer(state: RetroState, action: RetroAction): RetroState {
@@ -25,6 +34,7 @@ function reducer(state: RetroState, action: RetroAction): RetroState {
     case "state":
       return {
         cards: action.cards,
+        columns: action.columns,
         reactions: action.reactions,
         users: action.users,
         loaded: true,
@@ -89,12 +99,26 @@ function reducer(state: RetroState, action: RetroAction): RetroState {
       return { ...state, reactions: [...otherReactions, ...action.reactions] };
     }
 
+    case "column:updated":
+      return {
+        ...state,
+        columns: state.columns
+          .map((column) => (column.id === action.column.id ? action.column : column))
+          .sort((a, b) => a.position - b.position),
+      };
+
     default:
       return state;
   }
 }
 
-const initialState: RetroState = { cards: [], reactions: [], users: [], loaded: false };
+const initialState: RetroState = {
+  cards: [],
+  columns: DEFAULT_COLUMNS.map((column) => ({ ...column })),
+  reactions: [],
+  users: [],
+  loaded: false,
+};
 
 export function useRetroState(subscribe: (handler: (msg: ServerMessage) => void) => () => void) {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -103,7 +127,13 @@ export function useRetroState(subscribe: (handler: (msg: ServerMessage) => void)
     return subscribe((msg) => {
       switch (msg.type) {
         case "state":
-          dispatch({ type: "state", cards: msg.cards, reactions: msg.reactions, users: msg.users });
+          dispatch({
+            type: "state",
+            cards: msg.cards,
+            columns: msg.columns,
+            reactions: msg.reactions,
+            users: msg.users,
+          });
           break;
         case "user:joined":
           dispatch({ type: "user:joined", user: msg.user });
@@ -133,6 +163,9 @@ export function useRetroState(subscribe: (handler: (msg: ServerMessage) => void)
             columnId: msg.columnId,
             position: msg.position,
           });
+          break;
+        case "column:updated":
+          dispatch({ type: "column:updated", column: msg.column });
           break;
         case "reaction:toggled":
           dispatch({

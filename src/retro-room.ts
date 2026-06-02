@@ -1,7 +1,15 @@
 import { DurableObject } from "cloudflare:workers";
 import type { Env } from "./env.d";
-import type { Card, ClientMessage, Reaction, RetroUser, ServerMessage, ColumnId } from "./types";
-import { USER_COLORS, COLUMNS } from "./types";
+import type {
+  Card,
+  ClientMessage,
+  Reaction,
+  RetroUser,
+  ServerMessage,
+  ColumnId,
+  RetroColumn,
+} from "./types";
+import { USER_COLORS, COLUMNS, DEFAULT_COLUMNS } from "./types";
 
 interface SessionData {
   id: string;
@@ -37,6 +45,52 @@ export class RetroRoom extends DurableObject<Env> {
           PRIMARY KEY (card_id, emoji, user_name)
         )
       `);
+
+      this.ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS retro_columns (
+          id TEXT PRIMARY KEY,
+          label TEXT NOT NULL,
+          position INTEGER NOT NULL
+        )
+      `);
+
+      const columnCount = [
+        ...this.ctx.storage.sql.exec<{ count: number }>(
+          "SELECT COUNT(*) as count FROM retro_columns",
+        ),
+      ][0]?.count;
+
+      if (!columnCount) {
+        for (const column of DEFAULT_COLUMNS) {
+          this.ctx.storage.sql.exec(
+            "INSERT INTO retro_columns (id, label, position) VALUES (?, ?, ?)",
+            column.id,
+            column.label,
+            column.position,
+          );
+        }
+      }
+
+      this.ctx.storage.sql.exec(
+        "UPDATE cards SET column_id = ? WHERE column_id = ?",
+        "highlights",
+        "start",
+      );
+      this.ctx.storage.sql.exec(
+        "UPDATE cards SET column_id = ? WHERE column_id = ?",
+        "highlights",
+        "continue",
+      );
+      this.ctx.storage.sql.exec(
+        "UPDATE cards SET column_id = ? WHERE column_id = ?",
+        "challenges",
+        "stop",
+      );
+      this.ctx.storage.sql.exec(
+        "UPDATE cards SET column_id = ? WHERE column_id = ?",
+        "notes",
+        "actions",
+      );
     });
 
     // Restore sessions from hibernation
@@ -141,6 +195,10 @@ export class RetroRoom extends DurableObject<Env> {
 
       case "card:ungroup":
         this.handleCardUngroup(msg.cardId);
+        break;
+
+      case "column:update":
+        this.handleColumnUpdate(msg.columnId, msg.label);
         break;
 
       case "reaction:toggle":
@@ -303,7 +361,44 @@ export class RetroRoom extends DurableObject<Env> {
     this.broadcast({ type: "reaction:toggled", cardId, emoji, userName, reactions });
   }
 
+  private handleColumnUpdate(columnId: ColumnId, label: string): void {
+    if (!COLUMNS.includes(columnId)) return;
+
+    const trimmed = label.trim().slice(0, 40);
+    if (!trimmed) return;
+
+    this.ctx.storage.sql.exec("UPDATE retro_columns SET label = ? WHERE id = ?", trimmed, columnId);
+    const column = this.getColumn(columnId);
+    if (column) {
+      this.broadcast({ type: "column:updated", column });
+    }
+  }
+
   // --- Helpers ---
+
+  private getColumn(id: ColumnId): RetroColumn | null {
+    const row = [
+      ...this.ctx.storage.sql.exec<{ id: string; label: string; position: number }>(
+        "SELECT id, label, position FROM retro_columns WHERE id = ?",
+        id,
+      ),
+    ][0];
+
+    if (!row) return null;
+    return { id: row.id as ColumnId, label: row.label, position: row.position };
+  }
+
+  private getColumns(): RetroColumn[] {
+    const rows = this.ctx.storage.sql.exec<{ id: string; label: string; position: number }>(
+      "SELECT id, label, position FROM retro_columns ORDER BY position ASC",
+    );
+
+    return [...rows].map((row) => ({
+      id: row.id as ColumnId,
+      label: row.label,
+      position: row.position,
+    }));
+  }
 
   private getCard(id: string): Card | null {
     const rows = [
@@ -393,13 +488,14 @@ export class RetroRoom extends DurableObject<Env> {
   }
 
   private getFullState(): ServerMessage {
+    const columns = this.getColumns();
     const cards = this.getAllCards();
     const reactions = this.getAllReactions();
     const users: RetroUser[] = [];
     for (const session of this.sessions.values()) {
       users.push({ id: session.id, name: session.name, color: session.color });
     }
-    return { type: "state", cards, reactions, users };
+    return { type: "state", cards, columns, reactions, users };
   }
 
   private broadcast(message: ServerMessage, exclude?: WebSocket): void {

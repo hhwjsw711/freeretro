@@ -1,14 +1,19 @@
 // Column definitions
-export const COLUMNS = ["start", "stop", "continue", "notes", "actions"] as const;
-export type ColumnId = (typeof COLUMNS)[number];
+export const DEFAULT_COLUMNS = [
+  { id: "highlights", label: "Highlights", position: 0 },
+  { id: "challenges", label: "Challenges", position: 1 },
+  { id: "questions", label: "Questions", position: 2 },
+  { id: "notes", label: "Notes", position: 3 },
+] as const;
 
-export const COLUMN_LABELS: Record<ColumnId, string> = {
-  start: "Start",
-  stop: "Stop",
-  continue: "Continue",
-  notes: "Notes",
-  actions: "Action Items",
-};
+export type ColumnId = (typeof DEFAULT_COLUMNS)[number]["id"];
+export const COLUMNS = DEFAULT_COLUMNS.map((column) => column.id) as ColumnId[];
+
+export interface RetroColumn {
+  id: ColumnId;
+  label: string;
+  position: number;
+}
 
 // Data models
 export interface Card {
@@ -50,6 +55,7 @@ export type ClientMessage =
   | { type: "card:move"; cardId: string; columnId: ColumnId; position: number }
   | { type: "card:group"; cardId: string; targetCardId: string }
   | { type: "card:ungroup"; cardId: string }
+  | { type: "column:update"; columnId: ColumnId; label: string }
   | { type: "reaction:toggle"; cardId: string; emoji: string };
 
 // WebSocket messages: Server → Client
@@ -57,6 +63,7 @@ export type ServerMessage =
   | {
       type: "state";
       cards: Card[];
+      columns: RetroColumn[];
       reactions: Reaction[];
       users: RetroUser[];
     }
@@ -69,6 +76,7 @@ export type ServerMessage =
   | { type: "card:moved"; card: Card }
   | { type: "card:grouped"; cardId: string; groupId: string }
   | { type: "card:ungrouped"; cardId: string; columnId: ColumnId; position: number }
+  | { type: "column:updated"; column: RetroColumn }
   | { type: "retro:deleted" }
   | {
       type: "reaction:toggled";

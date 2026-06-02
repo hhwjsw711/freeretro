@@ -27,6 +27,14 @@ export function Column({
 }: ColumnProps) {
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [draftLabel, setDraftLabel] = useState(label);
+
+  useEffect(() => {
+    if (!isEditingLabel) {
+      setDraftLabel(label);
+    }
+  }, [isEditingLabel, label]);
 
   useEffect(() => {
     const el = columnRef.current;
@@ -65,6 +73,15 @@ export function Column({
     send({ type: "card:create", columnId, content });
   };
 
+  const saveLabel = () => {
+    const trimmed = draftLabel.trim().slice(0, 40);
+    if (trimmed && trimmed !== label) {
+      send({ type: "column:update", columnId, label: trimmed });
+    }
+    setDraftLabel(trimmed || label);
+    setIsEditingLabel(false);
+  };
+
   return (
     <div
       ref={columnRef}
@@ -74,7 +91,35 @@ export function Column({
     >
       {/* Column header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <h2 className="text-cf-text font-medium tracking-tight">{label}</h2>
+        {isEditingLabel ? (
+          <input
+            value={draftLabel}
+            onChange={(event) => setDraftLabel(event.target.value)}
+            onBlur={saveLabel}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                saveLabel();
+              }
+              if (event.key === "Escape") {
+                setDraftLabel(label);
+                setIsEditingLabel(false);
+              }
+            }}
+            autoFocus
+            maxLength={40}
+            className="border-cf-border bg-cf-bg-card text-cf-text focus:border-cf-orange w-full rounded border px-2 py-1 font-medium tracking-tight outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsEditingLabel(true)}
+            title="Rename column"
+            className="text-cf-text hover:text-cf-orange truncate text-left font-medium tracking-tight transition-colors"
+          >
+            {label}
+          </button>
+        )}
         <span className="text-cf-text-muted text-xs">{cards.length}</span>
       </div>
 

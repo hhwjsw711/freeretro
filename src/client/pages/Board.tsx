@@ -7,7 +7,6 @@ import { Column } from "../components/Column";
 import { CursorOverlay } from "../components/CursorOverlay";
 import { NamePrompt } from "../components/NamePrompt";
 import { Footer } from "../components/Footer";
-import { COLUMNS, COLUMN_LABELS } from "../../types";
 import type { RetroSummary } from "../../types";
 
 export function Board() {
@@ -155,12 +154,12 @@ export function Board() {
         ref={boardRef}
         className="relative grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 md:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]"
       >
-        {COLUMNS.map((columnId) => (
+        {state.columns.map((column) => (
           <Column
-            key={columnId}
-            columnId={columnId}
-            label={COLUMN_LABELS[columnId]}
-            cards={state.getCardsForColumn(columnId)}
+            key={column.id}
+            columnId={column.id}
+            label={column.label}
+            cards={state.getCardsForColumn(column.id)}
             getGroupedCards={state.getGroupedCards}
             getReactionsForCard={state.getReactionsForCard}
             send={send}
