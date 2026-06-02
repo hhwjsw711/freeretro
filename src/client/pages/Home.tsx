@@ -29,39 +29,33 @@ export function Home() {
     <div className="flex min-h-screen flex-col">
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-12">
         <header className="mb-12 text-center">
-          <h1 className="text-cf-text mb-3 text-5xl font-medium tracking-tight">Free Retro</h1>
-          <p className="text-cf-text-muted text-lg">
-            Create an unlisted real-time retrospective. Share the link with your team when you're
-            ready.
+          <h1 className="text-cf-text mb-5 text-7xl leading-none font-medium tracking-tight sm:text-8xl md:text-9xl">
+            Free Retro
+          </h1>
+          <p className="text-cf-text-muted text-xl">
+            Run lightweight retros with your team, for free.
           </p>
         </header>
 
-        <div className="border-cf-border bg-cf-bg-card relative rounded-xl border p-6">
-          <div className="border-cf-border bg-cf-bg-page absolute -top-1 -left-1 h-2 w-2 rounded-[1.5px] border" />
-          <div className="border-cf-border bg-cf-bg-page absolute -top-1 -right-1 h-2 w-2 rounded-[1.5px] border" />
-          <div className="border-cf-border bg-cf-bg-page absolute -bottom-1 -left-1 h-2 w-2 rounded-[1.5px] border" />
-          <div className="border-cf-border bg-cf-bg-page absolute -right-1 -bottom-1 h-2 w-2 rounded-[1.5px] border" />
-
-          <form onSubmit={createRetro} className="flex flex-col gap-3 sm:flex-row">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Sprint 42 Retro..."
-              className="border-cf-border bg-cf-bg-card text-cf-text placeholder:text-cf-text-muted focus:border-cf-orange focus:ring-cf-orange flex-1 rounded-lg border p-3 outline-none focus:ring-1"
-            />
-            <button
-              type="submit"
-              disabled={!title.trim() || creating}
-              className="border-cf-orange bg-cf-orange rounded-full border px-6 py-3 font-medium text-white transition-all hover:opacity-95 active:translate-y-[1px] active:scale-[0.98] disabled:opacity-50"
-            >
-              {creating ? "Creating..." : "Create retro"}
-            </button>
-          </form>
-          <p className="text-cf-text-muted mt-4 text-sm">
-            No public index, no retro listing. Anyone with the link can join.
-          </p>
-        </div>
+        <form onSubmit={createRetro} className="flex flex-col gap-3 sm:flex-row">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Sprint 42 Retro..."
+            className="border-cf-border bg-cf-bg-card text-cf-text placeholder:text-cf-text-muted focus:border-cf-orange focus:ring-cf-orange flex-1 rounded-lg border p-3 outline-none focus:ring-1"
+          />
+          <button
+            type="submit"
+            disabled={!title.trim() || creating}
+            className="border-cf-orange bg-cf-orange rounded-full border px-6 py-3 font-medium text-white transition-all hover:opacity-95 active:translate-y-[1px] active:scale-[0.98] disabled:opacity-50"
+          >
+            {creating ? "Creating..." : "Create retro"}
+          </button>
+        </form>
+        <p className="text-cf-text-muted mt-4 text-center text-sm">
+          Each retro gets a unique unguessable URL. Anyone with the link can join.
+        </p>
       </main>
       <Footer />
     </div>
