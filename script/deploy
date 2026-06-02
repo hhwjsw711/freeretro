@@ -2,4 +2,4 @@
 set -e
 cd "$(dirname "$0")/.."
 npm run build
-npx wrangler deploy
+npx wrangler deploy --config dist/freeretro/wrangler.json

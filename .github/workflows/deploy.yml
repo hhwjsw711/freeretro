@@ -25,9 +25,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and deploy
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          command: deploy --config dist/freeretro/wrangler.json

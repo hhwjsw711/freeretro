@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
-    "deploy": "npm run build && npx wrangler deploy",
+    "deploy": "npm run build && npx wrangler deploy --config dist/freeretro/wrangler.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
