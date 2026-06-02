@@ -36,6 +36,34 @@ describe("API endpoints", () => {
     expect(retro.title).toBe("Find Me");
   });
 
+  it("PUT /api/retros/:id renames a retro", async () => {
+    const createRes = await SELF.fetch("http://localhost/api/retros", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Old Name" }),
+    });
+    const created = (await createRes.json()) as { id: string };
+
+    const res = await SELF.fetch(`http://localhost/api/retros/${created.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "New Name" }),
+    });
+    expect(res.status).toBe(200);
+    const retro = (await res.json()) as { id: string; title: string };
+    expect(retro.id).toBe(created.id);
+    expect(retro.title).toBe("New Name");
+  });
+
+  it("PUT /api/retros/:id rejects empty titles", async () => {
+    const res = await SELF.fetch("http://localhost/api/retros/missing", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "" }),
+    });
+    expect(res.status).toBe(400);
+  });
+
   it("POST /api/retros rejects empty title", async () => {
     const res = await SELF.fetch("http://localhost/api/retros", {
       method: "POST",

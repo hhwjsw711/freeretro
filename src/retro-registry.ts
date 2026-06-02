@@ -48,6 +48,11 @@ export class RetroRegistry extends DurableObject<Env> {
     };
   }
 
+  async updateRetroTitle(id: string, title: string): Promise<RetroSummary | null> {
+    this.ctx.storage.sql.exec("UPDATE retros SET title = ? WHERE id = ?", title, id);
+    return this.getRetro(id);
+  }
+
   async deleteRetro(id: string): Promise<void> {
     this.ctx.storage.sql.exec("DELETE FROM retros WHERE id = ?", id);
   }

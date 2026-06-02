@@ -29,6 +29,17 @@ describe("RetroRegistry", () => {
     expect(await registry.getRetro(retroId)).toBeNull();
   });
 
+  it("updates a retro title", async () => {
+    const id = env.RETRO_REGISTRY.idFromName("global");
+    const registry = env.RETRO_REGISTRY.get(id);
+    const retroId = crypto.randomUUID();
+
+    await registry.createRetro(retroId, "Old Name", null);
+    const retro = await registry.updateRetroTitle(retroId, "New Name");
+    expect(retro).toBeTruthy();
+    expect(retro!.title).toBe("New Name");
+  });
+
   it("gets a single retro by ID", async () => {
     const id = env.RETRO_REGISTRY.idFromName("global");
     const registry = env.RETRO_REGISTRY.get(id);

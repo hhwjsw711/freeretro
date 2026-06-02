@@ -32,6 +32,23 @@ app.get("/api/retros/:retroId", async (c) => {
   return c.json(retro);
 });
 
+// API: Rename a retro
+app.put("/api/retros/:retroId", async (c) => {
+  const body = await c.req.json<{ title: string }>();
+  if (!body.title?.trim()) {
+    return c.json({ error: "Title is required" }, 400);
+  }
+
+  const retroId = c.req.param("retroId");
+  const id = c.env.RETRO_REGISTRY.idFromName("global");
+  const registry = c.env.RETRO_REGISTRY.get(id);
+  const retro = await registry.updateRetroTitle(retroId, body.title.trim());
+  if (!retro) {
+    return c.json({ error: "Retro not found" }, 404);
+  }
+  return c.json(retro);
+});
+
 // API: Delete a retro
 app.delete("/api/retros/:retroId", async (c) => {
   const retroId = c.req.param("retroId");

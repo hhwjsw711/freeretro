@@ -16,6 +16,8 @@ export function Board() {
   const [name, setName] = useState(() => localStorage.getItem("retro-name") ?? "");
   const [showNamePrompt, setShowNamePrompt] = useState(!name);
   const [retro, setRetro] = useState<RetroSummary | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
   const [notFound, setNotFound] = useState(false);
 
   const { send, subscribe, connected, userId } = useWebSocket(retroId!, name);
@@ -28,6 +30,12 @@ export function Board() {
       localStorage.setItem("retro-name", name);
     }
   }, [name]);
+
+  useEffect(() => {
+    if (!isEditingTitle) {
+      setDraftTitle(retro?.title ?? "");
+    }
+  }, [isEditingTitle, retro?.title]);
 
   useEffect(() => {
     fetch(`/api/retros/${retroId}`)
@@ -67,6 +75,29 @@ export function Board() {
 
   const toggleBlur = () => {
     send({ type: "blur:set", blurred: !state.blurred });
+  };
+
+  const saveTitle = async () => {
+    const trimmed = draftTitle.trim().slice(0, 80);
+    if (!trimmed || !retro || trimmed === retro.title) {
+      setDraftTitle(retro?.title ?? "");
+      setIsEditingTitle(false);
+      return;
+    }
+
+    const res = await fetch(`/api/retros/${retro.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: trimmed }),
+    });
+
+    if (res.ok) {
+      const nextRetro = (await res.json()) as RetroSummary;
+      setRetro(nextRetro);
+      saveLocalRetro(nextRetro);
+    }
+
+    setIsEditingTitle(false);
   };
 
   const deleteRetro = async () => {
@@ -119,9 +150,35 @@ export function Board() {
           <Link to="/" className="text-cf-orange hover:underline hover:underline-offset-4">
             ← Back
           </Link>
-          <h1 className="text-cf-text text-lg font-medium tracking-tight">
-            {retro?.title ?? "Free Retro"}
-          </h1>
+          {isEditingTitle ? (
+            <input
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  saveTitle();
+                }
+                if (event.key === "Escape") {
+                  setDraftTitle(retro?.title ?? "");
+                  setIsEditingTitle(false);
+                }
+              }}
+              autoFocus
+              maxLength={80}
+              className="border-cf-border bg-cf-bg-card text-cf-text focus:border-cf-orange min-w-48 rounded border px-2 py-1 text-lg font-medium tracking-tight outline-none"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsEditingTitle(true)}
+              title="Rename retro"
+              className="text-cf-text hover:text-cf-orange text-left text-lg font-medium tracking-tight transition-colors"
+            >
+              {retro?.title ?? "Free Retro"}
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
