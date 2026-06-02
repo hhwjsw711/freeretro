@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function GitHubIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4 fill-current">
@@ -9,8 +11,8 @@ function GitHubIcon() {
 export function Footer() {
   return (
     <footer className="text-cf-text-muted flex flex-wrap items-center justify-center gap-3 px-6 py-6 text-sm">
-      <span>Built with 🧡 by Cloudflare</span>
-      <span aria-hidden="true">·</span>
+      <span>Made with love by Cloudflare</span>
+      <span aria-hidden="true">/</span>
       <a
         href="https://github.com/zeke/freeretro"
         className="hover:text-cf-orange inline-flex items-center gap-1.5 transition-colors"
@@ -18,6 +20,10 @@ export function Footer() {
         <GitHubIcon />
         Open source on GitHub
       </a>
+      <span aria-hidden="true">/</span>
+      <Link to="/about" className="hover:text-cf-orange transition-colors">
+        What is this?
+      </Link>
     </footer>
   );
 }

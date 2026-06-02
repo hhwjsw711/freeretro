@@ -49,7 +49,7 @@ export function Home() {
             Free Retro
           </h1>
           <p className="text-cf-text-muted text-xl">
-            Run lightweight retros with your team, for free.
+            Run lightweight retrospectives with your team for free.
           </p>
         </header>
 
