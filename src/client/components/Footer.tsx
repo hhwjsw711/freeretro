@@ -20,10 +20,13 @@ function CloudflareIcon() {
 export function Footer() {
   return (
     <footer className="text-cf-text-muted flex flex-wrap items-center justify-center gap-3 px-6 py-6 text-sm">
-      <span className="inline-flex items-center gap-1.5">
+      <Link
+        to="/about"
+        className="hover:text-cf-orange inline-flex items-center gap-1.5 transition-colors"
+      >
         <CloudflareIcon />
         Sponsored by Cloudflare
-      </span>
+      </Link>
       <span aria-hidden="true">/</span>
       <a
         href="https://github.com/zeke/freeretro"
