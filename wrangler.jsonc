@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "freeretro",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-04-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application",
+  },
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RETRO_REGISTRY",
+        "class_name": "RetroRegistry",
+      },
+      {
+        "name": "RETRO_ROOM",
+        "class_name": "RetroRoom",
+      },
+    ],
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RetroRegistry", "RetroRoom"],
+    },
+  ],
+}
