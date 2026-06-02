@@ -21,6 +21,7 @@ export interface Card {
   columnId: ColumnId;
   content: string;
   author: string;
+  authorId: string | null;
   groupId: string | null;
   position: number;
   createdAt: number;
@@ -56,6 +57,7 @@ export type ClientMessage =
   | { type: "card:group"; cardId: string; targetCardId: string }
   | { type: "card:ungroup"; cardId: string }
   | { type: "column:update"; columnId: ColumnId; label: string }
+  | { type: "blur:set"; blurred: boolean }
   | { type: "reaction:toggle"; cardId: string; emoji: string };
 
 // WebSocket messages: Server → Client
@@ -66,10 +68,11 @@ export type ServerMessage =
       columns: RetroColumn[];
       reactions: Reaction[];
       users: RetroUser[];
+      blurred: boolean;
     }
   | { type: "user:joined"; user: RetroUser }
   | { type: "user:left"; userId: string }
-  | { type: "cursor"; userId: string; name: string; x: number; y: number }
+  | { type: "cursor"; userId: string; name: string; color: string; x: number; y: number }
   | { type: "card:created"; card: Card }
   | { type: "card:updated"; card: Card }
   | { type: "card:deleted"; cardId: string }
@@ -77,6 +80,7 @@ export type ServerMessage =
   | { type: "card:grouped"; cardId: string; groupId: string }
   | { type: "card:ungrouped"; cardId: string; columnId: ColumnId; position: number }
   | { type: "column:updated"; column: RetroColumn }
+  | { type: "blur:updated"; blurred: boolean }
   | { type: "retro:deleted" }
   | {
       type: "reaction:toggled";

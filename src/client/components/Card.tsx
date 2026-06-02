@@ -14,6 +14,8 @@ interface RetroCardProps {
   reactions: Reaction[];
   send: (msg: ClientMessage) => void;
   userName: string;
+  userId: string;
+  blurred: boolean;
   allCards: CardType[];
 }
 
@@ -24,6 +26,8 @@ export function RetroCard({
   reactions,
   send,
   userName,
+  userId,
+  blurred,
   allCards,
 }: RetroCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -32,6 +36,8 @@ export function RetroCard({
   const [isDropTarget, setIsDropTarget] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(card.content);
+  const isOwnCard = card.authorId === userId || (!card.authorId && card.author === userName);
+  const shouldBlur = blurred && !isOwnCard;
 
   useEffect(() => {
     const el = cardRef.current;
@@ -189,8 +195,11 @@ export function RetroCard({
             </div>
           ) : (
             <p
-              className="text-cf-text cursor-text text-sm whitespace-pre-wrap"
+              className={`text-cf-text text-sm whitespace-pre-wrap transition-[filter] ${
+                shouldBlur ? "cursor-default blur-sm select-none" : "cursor-text"
+              }`}
               onClick={() => {
+                if (shouldBlur) return;
                 setEditContent(card.content);
                 setIsEditing(true);
               }}
@@ -243,6 +252,8 @@ export function RetroCard({
           parentCard={card}
           send={send}
           userName={userName}
+          userId={userId}
+          blurred={blurred}
           getReactionsForCard={() => []}
         />
       )}

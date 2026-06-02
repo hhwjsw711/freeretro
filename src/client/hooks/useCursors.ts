@@ -16,21 +16,33 @@ export function useCursors(
   users: { id: string; name: string; color: string }[],
 ) {
   const [cursors, setCursors] = useState<Map<string, CursorPosition>>(new Map());
+  const userColorsRef = useRef<Map<string, string>>(new Map());
   const lastSendRef = useRef(0);
   const boardRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    userColorsRef.current = new Map(users.map((user) => [user.id, user.color]));
+  }, [users]);
 
   // Track remote cursors
   useEffect(() => {
     return subscribe((msg) => {
+      if (msg.type === "state") {
+        userColorsRef.current = new Map(msg.users.map((user) => [user.id, user.color]));
+      }
+
+      if (msg.type === "user:joined") {
+        userColorsRef.current.set(msg.user.id, msg.user.color);
+      }
+
       if (msg.type === "cursor" && msg.userId !== userId) {
         setCursors((prev) => {
           const next = new Map(prev);
-          const user = users.find((u) => u.id === msg.userId);
           next.set(msg.userId, {
             x: msg.x,
             y: msg.y,
             name: msg.name,
-            color: user?.color ?? "#FF4801",
+            color: msg.color ?? userColorsRef.current.get(msg.userId) ?? "#FF4801",
             lastSeen: Date.now(),
           });
           return next;
@@ -45,7 +57,7 @@ export function useCursors(
         });
       }
     });
-  }, [subscribe, userId, users]);
+  }, [subscribe, userId]);
 
   // Clean up stale cursors every 3 seconds
   useEffect(() => {

@@ -31,6 +31,7 @@ export class RetroRoom extends DurableObject<Env> {
           column_id TEXT NOT NULL,
           content TEXT NOT NULL,
           author TEXT NOT NULL,
+          author_id TEXT,
           group_id TEXT,
           position REAL NOT NULL,
           created_at INTEGER NOT NULL
@@ -54,6 +55,18 @@ export class RetroRoom extends DurableObject<Env> {
         )
       `);
 
+      this.ctx.storage.sql.exec(`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      `);
+
+      const columns = [...this.ctx.storage.sql.exec<{ name: string }>("PRAGMA table_info(cards)")];
+      if (!columns.some((column) => column.name === "author_id")) {
+        this.ctx.storage.sql.exec("ALTER TABLE cards ADD COLUMN author_id TEXT");
+      }
+
       const columnCount = [
         ...this.ctx.storage.sql.exec<{ count: number }>(
           "SELECT COUNT(*) as count FROM retro_columns",
@@ -70,6 +83,12 @@ export class RetroRoom extends DurableObject<Env> {
           );
         }
       }
+
+      this.ctx.storage.sql.exec(
+        "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",
+        "blurred",
+        "true",
+      );
 
       this.ctx.storage.sql.exec(
         "UPDATE cards SET column_id = ? WHERE column_id = ?",
@@ -168,7 +187,14 @@ export class RetroRoom extends DurableObject<Env> {
 
       case "cursor":
         this.broadcast(
-          { type: "cursor", userId: session.id, name: session.name, x: msg.x, y: msg.y },
+          {
+            type: "cursor",
+            userId: session.id,
+            name: session.name,
+            color: session.color,
+            x: msg.x,
+            y: msg.y,
+          },
           ws,
         );
         break;
@@ -199,6 +225,10 @@ export class RetroRoom extends DurableObject<Env> {
 
       case "column:update":
         this.handleColumnUpdate(msg.columnId, msg.label);
+        break;
+
+      case "blur:set":
+        this.handleBlurSet(msg.blurred);
         break;
 
       case "reaction:toggle":
@@ -240,11 +270,12 @@ export class RetroRoom extends DurableObject<Env> {
     const createdAt = Date.now();
 
     this.ctx.storage.sql.exec(
-      "INSERT INTO cards (id, column_id, content, author, group_id, position, created_at) VALUES (?, ?, ?, ?, NULL, ?, ?)",
+      "INSERT INTO cards (id, column_id, content, author, author_id, group_id, position, created_at) VALUES (?, ?, ?, ?, ?, NULL, ?, ?)",
       id,
       columnId,
       content.trim(),
       session.name,
+      session.id,
       position,
       createdAt,
     );
@@ -254,6 +285,7 @@ export class RetroRoom extends DurableObject<Env> {
       columnId,
       content: content.trim(),
       author: session.name,
+      authorId: session.id,
       groupId: null,
       position,
       createdAt,
@@ -374,6 +406,15 @@ export class RetroRoom extends DurableObject<Env> {
     }
   }
 
+  private handleBlurSet(blurred: boolean): void {
+    this.ctx.storage.sql.exec(
+      "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+      "blurred",
+      String(blurred),
+    );
+    this.broadcast({ type: "blur:updated", blurred });
+  }
+
   // --- Helpers ---
 
   private getColumn(id: ColumnId): RetroColumn | null {
@@ -407,6 +448,7 @@ export class RetroRoom extends DurableObject<Env> {
         column_id: string;
         content: string;
         author: string;
+        author_id: string | null;
         group_id: string | null;
         position: number;
         created_at: number;
@@ -420,6 +462,7 @@ export class RetroRoom extends DurableObject<Env> {
       columnId: row.column_id as ColumnId,
       content: row.content,
       author: row.author,
+      authorId: row.author_id,
       groupId: row.group_id,
       position: row.position,
       createdAt: row.created_at,
@@ -432,6 +475,7 @@ export class RetroRoom extends DurableObject<Env> {
       column_id: string;
       content: string;
       author: string;
+      author_id: string | null;
       group_id: string | null;
       position: number;
       created_at: number;
@@ -442,6 +486,7 @@ export class RetroRoom extends DurableObject<Env> {
       columnId: row.column_id as ColumnId,
       content: row.content,
       author: row.author,
+      authorId: row.author_id,
       groupId: row.group_id,
       position: row.position,
       createdAt: row.created_at,
@@ -487,15 +532,26 @@ export class RetroRoom extends DurableObject<Env> {
     return maxPos + 1;
   }
 
+  private getBlurred(): boolean {
+    const row = [
+      ...this.ctx.storage.sql.exec<{ value: string }>(
+        "SELECT value FROM settings WHERE key = ?",
+        "blurred",
+      ),
+    ][0];
+    return row?.value !== "false";
+  }
+
   private getFullState(): ServerMessage {
     const columns = this.getColumns();
     const cards = this.getAllCards();
     const reactions = this.getAllReactions();
+    const blurred = this.getBlurred();
     const users: RetroUser[] = [];
     for (const session of this.sessions.values()) {
       users.push({ id: session.id, name: session.name, color: session.color });
     }
-    return { type: "state", cards, columns, reactions, users };
+    return { type: "state", cards, columns, reactions, users, blurred };
   }
 
   private broadcast(message: ServerMessage, exclude?: WebSocket): void {

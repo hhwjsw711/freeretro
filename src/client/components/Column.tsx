@@ -12,6 +12,8 @@ interface ColumnProps {
   getReactionsForCard: (cardId: string) => Reaction[];
   send: (msg: ClientMessage) => void;
   userName: string;
+  userId: string;
+  blurred: boolean;
   allCards: CardType[];
 }
 
@@ -23,6 +25,8 @@ export function Column({
   getReactionsForCard,
   send,
   userName,
+  userId,
+  blurred,
   allCards,
 }: ColumnProps) {
   const columnRef = useRef<HTMLDivElement>(null);
@@ -134,6 +138,8 @@ export function Column({
             reactions={getReactionsForCard(card.id)}
             send={send}
             userName={userName}
+            userId={userId}
+            blurred={blurred}
             allCards={allCards}
           />
         ))}

@@ -7,6 +7,7 @@ interface RetroState {
   columns: RetroColumn[];
   reactions: Reaction[];
   users: RetroUser[];
+  blurred: boolean;
   loaded: boolean;
 }
 
@@ -17,6 +18,7 @@ type RetroAction =
       columns: RetroColumn[];
       reactions: Reaction[];
       users: RetroUser[];
+      blurred: boolean;
     }
   | { type: "user:joined"; user: RetroUser }
   | { type: "user:left"; userId: string }
@@ -27,6 +29,7 @@ type RetroAction =
   | { type: "card:grouped"; cardId: string; groupId: string }
   | { type: "card:ungrouped"; cardId: string; columnId: ColumnId; position: number }
   | { type: "column:updated"; column: RetroColumn }
+  | { type: "blur:updated"; blurred: boolean }
   | { type: "reaction:toggled"; cardId: string; reactions: Reaction[] };
 
 function reducer(state: RetroState, action: RetroAction): RetroState {
@@ -37,6 +40,7 @@ function reducer(state: RetroState, action: RetroAction): RetroState {
         columns: action.columns,
         reactions: action.reactions,
         users: action.users,
+        blurred: action.blurred,
         loaded: true,
       };
 
@@ -107,6 +111,9 @@ function reducer(state: RetroState, action: RetroAction): RetroState {
           .sort((a, b) => a.position - b.position),
       };
 
+    case "blur:updated":
+      return { ...state, blurred: action.blurred };
+
     default:
       return state;
   }
@@ -117,6 +124,7 @@ const initialState: RetroState = {
   columns: DEFAULT_COLUMNS.map((column) => ({ ...column })),
   reactions: [],
   users: [],
+  blurred: true,
   loaded: false,
 };
 
@@ -133,6 +141,7 @@ export function useRetroState(subscribe: (handler: (msg: ServerMessage) => void)
             columns: msg.columns,
             reactions: msg.reactions,
             users: msg.users,
+            blurred: msg.blurred,
           });
           break;
         case "user:joined":
@@ -166,6 +175,9 @@ export function useRetroState(subscribe: (handler: (msg: ServerMessage) => void)
           break;
         case "column:updated":
           dispatch({ type: "column:updated", column: msg.column });
+          break;
+        case "blur:updated":
+          dispatch({ type: "blur:updated", blurred: msg.blurred });
           break;
         case "reaction:toggled":
           dispatch({

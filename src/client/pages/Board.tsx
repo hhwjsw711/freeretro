@@ -59,6 +59,10 @@ export function Board() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const toggleBlur = () => {
+    send({ type: "blur:set", blurred: !state.blurred });
+  };
+
   const deleteRetro = async () => {
     const confirmed = window.confirm(
       "Delete this retro forever? This removes all cards and reactions and can't be undone.",
@@ -141,6 +145,12 @@ export function Board() {
             {copiedLink ? "Copied!" : "Share link"}
           </button>
           <button
+            onClick={toggleBlur}
+            className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
+          >
+            {state.blurred ? "Show cards" : "Blur cards"}
+          </button>
+          <button
             onClick={deleteRetro}
             className="border-cf-border text-cf-text-muted rounded-full border px-4 py-1.5 text-sm transition-all hover:border-red-400 hover:text-red-500"
           >
@@ -164,6 +174,8 @@ export function Board() {
             getReactionsForCard={state.getReactionsForCard}
             send={send}
             userName={name}
+            userId={userId}
+            blurred={state.blurred}
             allCards={state.cards}
           />
         ))}

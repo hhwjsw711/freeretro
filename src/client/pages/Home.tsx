@@ -37,7 +37,10 @@ export function Home() {
           </p>
         </header>
 
-        <form onSubmit={createRetro} className="flex flex-col gap-3 sm:flex-row">
+        <form
+          onSubmit={createRetro}
+          className="mx-auto flex w-full max-w-xl flex-col gap-3 sm:flex-row"
+        >
           <input
             type="text"
             value={title}

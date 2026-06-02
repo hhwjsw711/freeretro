@@ -8,7 +8,11 @@ export function useWebSocket(retroId: string, name: string) {
   const handlersRef = useRef<Set<MessageHandler>>(new Set());
   const [connected, setConnected] = useState(false);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const userIdRef = useRef(crypto.randomUUID());
+  const userIdRef = useRef(localStorage.getItem("retro-user-id") ?? crypto.randomUUID());
+
+  useEffect(() => {
+    localStorage.setItem("retro-user-id", userIdRef.current);
+  }, []);
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
