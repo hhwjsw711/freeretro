@@ -10,29 +10,29 @@ interface Persona {
 
 const PERSONAS: Persona[] = [
   {
-    name: "Maya (PM)",
+    name: "Maya（产品经理）",
     cards: [
-      ["highlights", "We hit the launch date with every must-have feature shipped."],
-      ["challenges", "Scope crept late and we had to cut two stretch goals."],
-      ["questions", "Do we have capacity for a fast-follow release next month?"],
+      ["highlights", "我们按计划发布了所有必备功能。"],
+      ["challenges", "需求蔓延导致砍掉了两个扩展目标。"],
+      ["questions", "下个月有带宽做一次快速跟进发布吗？"],
     ],
     emojis: ["👍", "🎉", "💯", "⭐"],
   },
   {
-    name: "Devon (Engineer)",
+    name: "Devon（工程师）",
     cards: [
-      ["highlights", "The new caching layer cut p95 API latency by about 40%."],
-      ["challenges", "Flaky integration tests kept blocking the release candidate."],
-      ["questions", "Should we retire the legacy queue next sprint?"],
+      ["highlights", "新的缓存层将 P95 API 延迟降低了约 40%。"],
+      ["challenges", "不稳定的集成测试一直阻塞候选版本。"],
+      ["questions", "我们要不要在下个 Sprint 退役旧的队列？"],
     ],
     emojis: ["🔥", "🚀", "💯", "👍"],
   },
   {
-    name: "Sasha (Designer)",
+    name: "Sasha（设计师）",
     cards: [
-      ["highlights", "The redesigned onboarding flow tested really well with users."],
-      ["challenges", "Design handoff was rushed; several specs landed late."],
-      ["questions", "Can we run a post-launch usability study on the dashboard?"],
+      ["highlights", "重新设计的引导流程在用户测试中表现非常好。"],
+      ["challenges", "设计交接时间太仓促，几份规范交付晚了。"],
+      ["questions", "能否对仪表盘进行发布后的可用性研究？"],
     ],
     emojis: ["🤔", "👀", "⭐", "❤️"],
   },

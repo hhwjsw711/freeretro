@@ -11,7 +11,6 @@ import { COLUMNS } from "../../types";
 import type { AgentTool, ToolResult } from "./webmcp";
 import type { Embodiment, InteractionMode } from "./embodiment";
 
-// Snapshot of live client state the read tools report on.
 export interface BoardSnapshot {
   cards: Card[];
   columns: RetroColumn[];
@@ -44,8 +43,6 @@ function isColumnId(value: unknown): value is ColumnId {
   return typeof value === "string" && (COLUMNS as string[]).includes(value);
 }
 
-// Position at the end of the target column, matching the drag-and-drop and
-// move-menu behavior elsewhere in the app.
 function endOfColumnPosition(cards: Card[], columnId: ColumnId): number {
   const inColumn = cards
     .filter((c) => c.columnId === columnId && c.groupId === null)
@@ -57,7 +54,7 @@ function endOfColumnPosition(cards: Card[], columnId: ColumnId): number {
 const columnSchema = {
   type: "string",
   enum: [...COLUMNS],
-  description: "Column id: highlights, challenges, questions, or notes.",
+  description: "列 ID: highlights, challenges, questions, notes。",
 };
 
 export function createTools(ctx: ToolContext): AgentTool[] {
@@ -66,8 +63,7 @@ export function createTools(ctx: ToolContext): AgentTool[] {
   return [
     {
       name: "list_cards",
-      description:
-        "List all cards on the board with their column, author, content, upvote count, and reactions.",
+      description: "列出看板上所有卡片，包括所属列、作者、内容、点赞数和回应。",
       execute: () => {
         const { cards, upvotes, reactions } = getState();
         return json(
@@ -90,7 +86,7 @@ export function createTools(ctx: ToolContext): AgentTool[] {
     },
     {
       name: "list_columns",
-      description: "List the board's columns with their labels and card counts.",
+      description: "列出看板的所有列，包括标签和卡片数量。",
       execute: () => {
         const { columns, cards } = getState();
         return json(
@@ -105,7 +101,7 @@ export function createTools(ctx: ToolContext): AgentTool[] {
     },
     {
       name: "list_users",
-      description: "List the people and agents currently connected to this retro.",
+      description: "列出当前连接到本省思的人员和代理。",
       execute: () => {
         const { users } = getState();
         return json(users.map((u) => ({ id: u.id, name: u.name, color: u.color })));
@@ -113,7 +109,7 @@ export function createTools(ctx: ToolContext): AgentTool[] {
     },
     {
       name: "get_board_state",
-      description: "Get board-wide state: whether cards are blurred, the sort mode, and counts.",
+      description: "获取看板全局状态：卡片是否模糊、排序模式以及统计信息。",
       execute: () => {
         const { blurred, sortByUpvotes, users, cards } = getState();
         return json({ blurred, sortByUpvotes, online: users.length, cardCount: cards.length });
@@ -121,140 +117,139 @@ export function createTools(ctx: ToolContext): AgentTool[] {
     },
     {
       name: "create_card",
-      description: "Add a new card to a column.",
+      description: "向指定列添加新卡片。",
       inputSchema: {
         type: "object",
         properties: {
           columnId: columnSchema,
-          content: { type: "string", description: "The card text." },
+          content: { type: "string", description: "卡片文本。" },
         },
         required: ["columnId", "content"],
       },
       execute: async ({ columnId, content }) => {
-        if (!isColumnId(columnId)) return err(`Invalid columnId: ${String(columnId)}`);
-        if (typeof content !== "string" || !content.trim()) return err("content is required.");
+        if (!isColumnId(columnId)) return err(`无效的列ID: ${String(columnId)}`);
+        if (typeof content !== "string" || !content.trim()) return err("内容不能为空。");
         await embodiment.click({ type: "add-card", columnId });
         send({ type: "card:create", columnId, content: content.trim() });
-        return ok(`Added a card to ${columnId}.`);
+        return ok(`已在 ${columnId} 添加卡片。`);
       },
     },
     {
       name: "edit_card",
-      description: "Replace the text of an existing card.",
+      description: "替换已有卡片的文本内容。",
       inputSchema: {
         type: "object",
         properties: {
           cardId: { type: "string" },
-          content: { type: "string", description: "The new card text." },
+          content: { type: "string", description: "新的卡片文本。" },
         },
         required: ["cardId", "content"],
       },
       execute: async ({ cardId, content }) => {
-        if (typeof cardId !== "string") return err("cardId is required.");
-        if (typeof content !== "string" || !content.trim()) return err("content is required.");
+        if (typeof cardId !== "string") return err("cardId 不能为空。");
+        if (typeof content !== "string" || !content.trim()) return err("内容不能为空。");
         await embodiment.click({ type: "card-control", cardId, control: "content" });
         send({ type: "card:update", cardId, content: content.trim() });
-        return ok(`Updated card ${cardId}.`);
+        return ok(`已更新卡片 ${cardId}。`);
       },
     },
     {
       name: "delete_card",
-      description: "Delete a card.",
+      description: "删除一张卡片。",
       inputSchema: {
         type: "object",
         properties: { cardId: { type: "string" } },
         required: ["cardId"],
       },
       execute: async ({ cardId }) => {
-        if (typeof cardId !== "string") return err("cardId is required.");
+        if (typeof cardId !== "string") return err("cardId 不能为空。");
         await embodiment.click({ type: "card-control", cardId, control: "delete" });
         send({ type: "card:delete", cardId });
-        return ok(`Deleted card ${cardId}.`);
+        return ok(`已删除卡片 ${cardId}。`);
       },
     },
     {
       name: "move_card",
       description:
-        "Move a card to another column. In human mode the cursor drags it across; position defaults to the end of the target column.",
+        "将卡片移动到另一列。在人类模式下光标会拖拽卡片穿过屏幕；位置默认为目标列的末尾。",
       inputSchema: {
         type: "object",
         properties: {
           cardId: { type: "string" },
           columnId: columnSchema,
-          position: { type: "number", description: "Optional explicit position." },
+          position: { type: "number", description: "可选，显式指定位置。" },
         },
         required: ["cardId", "columnId"],
       },
       execute: async ({ cardId, columnId, position }) => {
-        if (typeof cardId !== "string") return err("cardId is required.");
-        if (!isColumnId(columnId)) return err(`Invalid columnId: ${String(columnId)}`);
+        if (typeof cardId !== "string") return err("cardId 不能为空。");
+        if (!isColumnId(columnId)) return err(`无效的列ID: ${String(columnId)}`);
         const resolved =
           typeof position === "number" ? position : endOfColumnPosition(getState().cards, columnId);
         await embodiment.drag({ type: "card", cardId }, { type: "column", columnId }, () => {
           send({ type: "card:move", cardId, columnId, position: resolved });
         });
-        return ok(`Moved card ${cardId} to ${columnId}.`);
+        return ok(`已将卡片 ${cardId} 移动到 ${columnId}。`);
       },
     },
     {
       name: "upvote_card",
-      description: "Toggle your upvote on a card.",
+      description: "切换对一张卡片的点赞状态。",
       inputSchema: {
         type: "object",
         properties: { cardId: { type: "string" } },
         required: ["cardId"],
       },
       execute: async ({ cardId }) => {
-        if (typeof cardId !== "string") return err("cardId is required.");
+        if (typeof cardId !== "string") return err("cardId 不能为空。");
         await embodiment.click({ type: "card-control", cardId, control: "upvote" });
         send({ type: "upvote:toggle", cardId });
-        return ok(`Toggled upvote on card ${cardId}.`);
+        return ok(`已切换卡片 ${cardId} 的点赞状态。`);
       },
     },
     {
       name: "react_to_card",
-      description: "Toggle an emoji reaction on a card.",
+      description: "切换对一张卡片的 emoji 回应。",
       inputSchema: {
         type: "object",
         properties: {
           cardId: { type: "string" },
-          emoji: { type: "string", description: "An emoji, e.g. 🚀." },
+          emoji: { type: "string", description: "一个 emoji，例如 🚀。" },
         },
         required: ["cardId", "emoji"],
       },
       execute: async ({ cardId, emoji }) => {
-        if (typeof cardId !== "string") return err("cardId is required.");
-        if (typeof emoji !== "string" || !emoji) return err("emoji is required.");
-        // Aim at the existing reaction chip if present, else the "+" picker button.
+        if (typeof cardId !== "string") return err("cardId 不能为空。");
+        if (typeof emoji !== "string" || !emoji) return err("emoji 不能为空。");
         const hasChip = getState().reactions.some((r) => r.cardId === cardId && r.emoji === emoji);
         const control = hasChip ? `reaction-${emoji}` : "react";
         await embodiment.click({ type: "card-control", cardId, control });
         send({ type: "reaction:toggle", cardId, emoji });
-        return ok(`Toggled ${emoji} on card ${cardId}.`);
+        return ok(`已切换 ${emoji} 在卡片 ${cardId} 上的回应。`);
       },
     },
     {
       name: "rename_column",
-      description: "Rename a column.",
+      description: "重命名一列。",
       inputSchema: {
         type: "object",
         properties: {
           columnId: columnSchema,
-          label: { type: "string", description: "The new column label." },
+          label: { type: "string", description: "新的列标签。" },
         },
         required: ["columnId", "label"],
       },
       execute: async ({ columnId, label }) => {
-        if (!isColumnId(columnId)) return err(`Invalid columnId: ${String(columnId)}`);
-        if (typeof label !== "string" || !label.trim()) return err("label is required.");
+        if (!isColumnId(columnId)) return err(`无效的列ID: ${String(columnId)}`);
+        if (typeof label !== "string" || !label.trim()) return err("label 不能为空。");
         await embodiment.click({ type: "column-control", columnId, control: "rename" });
         send({ type: "column:update", columnId, label: label.trim() });
-        return ok(`Renamed ${columnId} to "${label.trim()}".`);
+        return ok(`已将 ${columnId} 重命名为 "${label.trim()}"。`);
       },
     },
     {
       name: "set_blur",
-      description: "Blur or reveal all cards for everyone in the retro.",
+      description: "为省思中的所有参与者模糊或显示所有卡片。",
       inputSchema: {
         type: "object",
         properties: { blurred: { type: "boolean" } },
@@ -262,12 +257,12 @@ export function createTools(ctx: ToolContext): AgentTool[] {
       },
       execute: ({ blurred }) => {
         send({ type: "blur:set", blurred: Boolean(blurred) });
-        return ok(`Set blur to ${Boolean(blurred)}.`);
+        return ok(`已将模糊状态设为 ${Boolean(blurred)}。`);
       },
     },
     {
       name: "set_sort",
-      description: "Sort cards by upvotes, or restore manual order.",
+      description: "按点赞数排序卡片，或恢复为手动顺序。",
       inputSchema: {
         type: "object",
         properties: { sortByUpvotes: { type: "boolean" } },
@@ -275,40 +270,39 @@ export function createTools(ctx: ToolContext): AgentTool[] {
       },
       execute: ({ sortByUpvotes }) => {
         send({ type: "sort:set", sortByUpvotes: Boolean(sortByUpvotes) });
-        return ok(`Set sortByUpvotes to ${Boolean(sortByUpvotes)}.`);
+        return ok(`已将 sortByUpvotes 设为 ${Boolean(sortByUpvotes)}。`);
       },
     },
     {
       name: "set_cursor",
-      description:
-        "Move your visible cursor to viewport coordinates so others can see where you are pointing.",
+      description: "将你的可见光标移动到视口坐标，让其他人看到你指向的位置。",
       inputSchema: {
         type: "object",
         properties: {
-          x: { type: "number", description: "Viewport x in pixels." },
-          y: { type: "number", description: "Viewport y in pixels." },
+          x: { type: "number", description: "视口 x 坐标（像素）。" },
+          y: { type: "number", description: "视口 y 坐标（像素）。" },
         },
         required: ["x", "y"],
       },
       execute: async ({ x, y }) => {
-        if (typeof x !== "number" || typeof y !== "number") return err("x and y are required.");
+        if (typeof x !== "number" || typeof y !== "number") return err("x 和 y 不能为空。");
         await embodiment.point(x, y);
-        return ok(`Moved cursor to (${x}, ${y}).`);
+        return ok(`已将光标移动到 (${x}, ${y})。`);
       },
     },
     {
       name: "set_interaction_mode",
       description:
-        'Set how actions are performed: "human" animates your cursor to each target so people can follow along; "direct" applies changes instantly.',
+        '设置操作的执行方式："human"（人类）会让光标滑到每个目标，便于他人跟随；"direct"（直接）则会即时应用更改。',
       inputSchema: {
         type: "object",
         properties: { mode: { type: "string", enum: ["human", "direct"] } },
         required: ["mode"],
       },
       execute: ({ mode }) => {
-        if (mode !== "human" && mode !== "direct") return err('mode must be "human" or "direct".');
+        if (mode !== "human" && mode !== "direct") return err('mode 必须是 "human" 或 "direct"。');
         embodiment.setMode(mode as InteractionMode);
-        return ok(`Interaction mode set to ${mode}.`);
+        return ok(`交互模式已设为 ${mode}。`);
       },
     },
   ];

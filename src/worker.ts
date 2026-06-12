@@ -10,7 +10,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.post("/api/retros", async (c) => {
   const body = await c.req.json<{ title: string; createdBy?: string }>();
   if (!body.title?.trim()) {
-    return c.json({ error: "Title is required" }, 400);
+    return c.json({ error: "标题不能为空" }, 400);
   }
 
   const retroId = crypto.randomUUID();
@@ -27,7 +27,7 @@ app.get("/api/retros/:retroId", async (c) => {
   const registry = c.env.RETRO_REGISTRY.get(id);
   const retro = await registry.getRetro(retroId);
   if (!retro) {
-    return c.json({ error: "Retro not found" }, 404);
+    return c.json({ error: "省思未找到" }, 404);
   }
   return c.json(retro);
 });
@@ -36,7 +36,7 @@ app.get("/api/retros/:retroId", async (c) => {
 app.put("/api/retros/:retroId", async (c) => {
   const body = await c.req.json<{ title: string }>();
   if (!body.title?.trim()) {
-    return c.json({ error: "Title is required" }, 400);
+    return c.json({ error: "标题不能为空" }, 400);
   }
 
   const retroId = c.req.param("retroId");
@@ -44,7 +44,7 @@ app.put("/api/retros/:retroId", async (c) => {
   const registry = c.env.RETRO_REGISTRY.get(id);
   const retro = await registry.updateRetroTitle(retroId, body.title.trim());
   if (!retro) {
-    return c.json({ error: "Retro not found" }, 404);
+    return c.json({ error: "省思未找到" }, 404);
   }
   return c.json(retro);
 });
@@ -65,7 +65,7 @@ app.delete("/api/retros/:retroId", async (c) => {
 app.get("/api/ws/:retroId", async (c) => {
   const upgradeHeader = c.req.header("Upgrade");
   if (!upgradeHeader || upgradeHeader !== "websocket") {
-    return c.text("Expected Upgrade: websocket", 426);
+    return c.text("需要 Upgrade: websocket", 426);
   }
 
   const retroId = c.req.param("retroId");
@@ -73,7 +73,7 @@ app.get("/api/ws/:retroId", async (c) => {
   const registry = c.env.RETRO_REGISTRY.get(registryId);
   const retro = await registry.getRetro(retroId);
   if (!retro) {
-    return c.json({ error: "Retro not found" }, 404);
+    return c.json({ error: "省思未找到" }, 404);
   }
 
   const id = c.env.RETRO_ROOM.idFromName(retroId);

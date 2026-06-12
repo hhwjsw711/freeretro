@@ -24,7 +24,7 @@ export function CardForm({ onSubmit }: CardFormProps) {
         data-agent-control="add-card"
         className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange w-full rounded-lg border border-dashed p-2 text-sm transition-all"
       >
-        + Add card
+        + 添加卡片
       </button>
     );
   }
@@ -34,7 +34,7 @@ export function CardForm({ onSubmit }: CardFormProps) {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="What's on your mind?"
+        placeholder="你想说什么？"
         autoFocus
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -58,7 +58,7 @@ export function CardForm({ onSubmit }: CardFormProps) {
           disabled={!content.trim()}
           className="bg-cf-orange rounded-full px-4 py-1.5 text-sm font-medium text-white transition-all hover:opacity-95 active:translate-y-[1px] active:scale-[0.98] disabled:opacity-50"
         >
-          Add
+          添加
         </button>
         <button
           type="button"
@@ -68,7 +68,7 @@ export function CardForm({ onSubmit }: CardFormProps) {
           }}
           className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
         >
-          Cancel
+          取消
         </button>
       </div>
     </form>

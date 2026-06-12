@@ -25,11 +25,11 @@ export function useDemoSwarm(retroId: string | undefined) {
         stopRef.current();
         stopRef.current = null;
         setActive(false);
-        console.info("[freeretro] demo swarm stopped");
+        console.info("[freeretro] 演示群体已停止");
       } else {
         stopRef.current = startDemoSwarm(retroId);
         setActive(true);
-        console.info("[freeretro] demo swarm started");
+        console.info("[freeretro] 演示群体已启动");
       }
     };
 

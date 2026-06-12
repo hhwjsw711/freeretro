@@ -23,16 +23,14 @@ export function NamePrompt({ onSubmit }: NamePromptProps) {
         <div className="border-cf-border bg-cf-bg-page absolute -bottom-1 -left-1 h-2 w-2 rounded-[1.5px] border" />
         <div className="border-cf-border bg-cf-bg-page absolute -right-1 -bottom-1 h-2 w-2 rounded-[1.5px] border" />
 
-        <h2 className="text-cf-text mb-2 text-2xl font-medium tracking-tight">Join retro</h2>
-        <p className="text-cf-text-muted mb-6 text-sm">
-          Enter your name so others can see who you are.
-        </p>
+        <h2 className="text-cf-text mb-2 text-2xl font-medium tracking-tight">加入省思</h2>
+        <p className="text-cf-text-muted mb-6 text-sm">输入你的名字，让其他人知道你是谁。</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
+            placeholder="你的名字"
             autoFocus
             className="border-cf-border bg-cf-bg-page text-cf-text placeholder:text-cf-text-muted focus:border-cf-orange focus:ring-cf-orange w-full rounded-lg border p-3 outline-none focus:ring-1"
           />
@@ -41,7 +39,7 @@ export function NamePrompt({ onSubmit }: NamePromptProps) {
             disabled={!name.trim()}
             className="bg-cf-orange w-full rounded-full px-6 py-3 font-medium text-white transition-all hover:opacity-95 active:translate-y-[1px] active:scale-[0.98] disabled:opacity-50"
           >
-            Join
+            加入
           </button>
         </form>
       </div>

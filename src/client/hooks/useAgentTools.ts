@@ -46,20 +46,20 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildHelp(tools: ToolMetadata[]): string {
   const lines = [
-    "Free Retro agent API.",
+    "四省 代理 API。",
     "",
-    "Two ways to call tools:",
+    "两种调用方式：",
     "  document.modelContext.executeTool(name, args)   // WebMCP",
-    "  window.freeretro.call(name, args)               // convenience",
+    "  window.freeretro.call(name, args)               // 便捷调用",
     "",
-    "Interaction modes:",
-    "  human  (default for automated browsers): your cursor glides to each target so people watching can follow along.",
-    "  direct : changes apply instantly without cursor movement.",
-    "  Switch with window.freeretro.setMode('human'|'direct') or the set_interaction_mode tool.",
+    "交互模式：",
+    "  human  （自动化浏览器默认）：光标会滑到每个目标，让其他人可以跟随。",
+    "  direct ：无需移动光标，即时应用更改。",
+    "  使用 window.freeretro.setMode('human'|'direct') 或 set_interaction_mode 工具切换。",
     "",
-    "Your cursor is shared with everyone in the retro. Move it with set_cursor or window.freeretro.moveCursor(x, y).",
+    "你的光标会与省思中的所有人员共享。使用 set_cursor 或 window.freeretro.moveCursor(x, y) 移动光标。",
     "",
-    "Tools:",
+    "工具：",
     ...tools.map((tool) => `  ${tool.name} - ${tool.description}`),
   ];
   return lines.join("\n");
@@ -160,7 +160,7 @@ export function useAgentTools(options: UseAgentToolsOptions) {
     };
 
     console.info(
-      "[freeretro] Agent tools available: document.modelContext (WebMCP) or window.freeretro.help(). Modes: human (default, visible cursor) / direct.",
+      "[freeretro] 代理工具就绪: document.modelContext (WebMCP) 或 window.freeretro.help()。模式: human (默认，可见光标) / direct。",
     );
 
     return () => {

@@ -32,11 +32,9 @@ export function Home() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-12">
         <header className="mb-12 text-center">
           <h1 className="text-cf-text mb-5 text-7xl leading-none font-black tracking-tighter sm:text-8xl md:text-9xl">
-            Free Retro
+            四省
           </h1>
-          <p className="text-cf-text-muted text-xl">
-            Run lightweight retrospectives with your team for free.
-          </p>
+          <p className="text-cf-text-muted text-xl">团队省思 · 快速开始</p>
         </header>
 
         <form
@@ -47,7 +45,7 @@ export function Home() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Sprint 42 Retro..."
+            placeholder="输入省思主题..."
             className="border-cf-border bg-cf-bg-card text-cf-text placeholder:text-cf-text-muted focus:border-cf-orange focus:ring-cf-orange flex-1 rounded-lg border p-3 outline-none focus:ring-1"
           />
           <button
@@ -55,7 +53,7 @@ export function Home() {
             disabled={!title.trim() || creating}
             className="border-cf-orange bg-cf-orange rounded-full border px-6 py-3 font-medium text-white transition-all hover:opacity-95 active:translate-y-[1px] active:scale-[0.98] disabled:opacity-50"
           >
-            {creating ? "Creating..." : "Create retro"}
+            {creating ? "创建中..." : "创建省思"}
           </button>
         </form>
       </main>

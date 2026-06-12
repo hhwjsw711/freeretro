@@ -254,7 +254,7 @@ export function RetroCard({
                     ? "border-cf-orange text-cf-orange bg-orange-50"
                     : "border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange"
                 }`}
-                title="Upvote"
+                title="点赞"
               >
                 ↑ {upvotes.length}
               </button>

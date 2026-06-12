@@ -1,9 +1,9 @@
 // Column definitions
 export const DEFAULT_COLUMNS = [
-  { id: "highlights", label: "Highlights", position: 0 },
-  { id: "challenges", label: "Challenges", position: 1 },
-  { id: "questions", label: "Questions", position: 2 },
-  { id: "notes", label: "Notes", position: 3 },
+  { id: "highlights", label: "亮点", position: 0 },
+  { id: "challenges", label: "挑战", position: 1 },
+  { id: "questions", label: "提问", position: 2 },
+  { id: "notes", label: "备忘", position: 3 },
 ] as const;
 
 export type ColumnId = (typeof DEFAULT_COLUMNS)[number]["id"];

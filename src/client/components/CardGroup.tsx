@@ -42,7 +42,7 @@ export function CardGroup({
                 <button
                   onClick={() => send({ type: "card:ungroup", cardId: card.id })}
                   className="text-cf-text-muted rounded px-1.5 py-0.5 text-xs hover:bg-blue-50 hover:text-blue-500"
-                  title="Ungroup"
+                  title="取消分组"
                 >
                   ↗
                 </button>

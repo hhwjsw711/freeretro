@@ -119,9 +119,7 @@ export function Board() {
   };
 
   const deleteRetro = async () => {
-    const confirmed = window.confirm(
-      "Delete this retro forever? This removes all cards and reactions and can't be undone.",
-    );
+    const confirmed = window.confirm("永久删除此省思？这将删除所有卡片和回应，且无法撤销。");
     if (!confirmed) return;
 
     await fetch(`/api/retros/${retroId}`, { method: "DELETE" });
@@ -135,15 +133,13 @@ export function Board() {
     return (
       <div className="flex min-h-screen flex-col">
         <main className="mx-auto flex max-w-xl flex-1 flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-cf-text mb-3 text-3xl font-medium">Retro not found</h1>
-          <p className="text-cf-text-muted mb-6">
-            This retro may have been deleted, or the link may be wrong.
-          </p>
+          <h1 className="text-cf-text mb-3 text-3xl font-medium">省思未找到</h1>
+          <p className="text-cf-text-muted mb-6">此省思可能已被删除，或链接有误。</p>
           <Link
             to="/"
             className="border-cf-orange bg-cf-orange rounded-full border px-6 py-3 font-medium text-white transition-all hover:opacity-95"
           >
-            Create a new retro
+            创建新省思
           </Link>
         </main>
         <Footer />
@@ -166,7 +162,7 @@ export function Board() {
       <header className="border-cf-border flex flex-wrap items-center justify-between gap-3 border-b px-6 py-3">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-cf-orange hover:underline hover:underline-offset-4">
-            ← Back
+            ← 返回
           </Link>
           {isEditingTitle ? (
             <input
@@ -192,10 +188,10 @@ export function Board() {
               type="button"
               onClick={() => setIsEditingTitle(true)}
               data-agent-control="title"
-              title="Rename retro"
+              title="重命名省思"
               className="text-cf-text hover:text-cf-orange text-left text-lg font-medium tracking-tight transition-colors"
             >
-              {retro?.title ?? "Free Retro"}
+              {retro?.title ?? "四省"}
             </button>
           )}
         </div>
@@ -219,7 +215,7 @@ export function Board() {
           <div className="flex items-center gap-1.5">
             <div className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-red-400"}`} />
             <span className="text-cf-text-muted text-xs">
-              {connected ? `${state.users.length} online` : "Reconnecting..."}
+              {connected ? `${state.users.length} 人在线` : "正在重连..."}
             </span>
           </div>
 
@@ -228,28 +224,28 @@ export function Board() {
             data-agent-control="share"
             className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
           >
-            {copiedLink ? "Copied!" : "Share link"}
+            {copiedLink ? "已复制！" : "分享链接"}
           </button>
           <button
             onClick={toggleBlur}
             data-agent-control="blur"
             className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
           >
-            {state.blurred ? "Show cards" : "Blur cards"}
+            {state.blurred ? "显示卡片" : "模糊卡片"}
           </button>
           <button
             onClick={toggleSort}
             data-agent-control="sort"
             className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
           >
-            {state.sortByUpvotes ? "Manual order" : "Sort by votes"}
+            {state.sortByUpvotes ? "手动排序" : "按票数排序"}
           </button>
           <button
             onClick={deleteRetro}
             data-agent-control="delete-retro"
             className="border-cf-border text-cf-text-muted rounded-full border px-4 py-1.5 text-sm transition-all hover:border-red-400 hover:text-red-500"
           >
-            Delete
+            删除
           </button>
         </div>
       </header>
@@ -260,8 +256,8 @@ export function Board() {
         className="relative grid flex-1 grid-cols-1 overflow-x-hidden overflow-y-auto p-4 md:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]"
       >
         <p className="sr-only">
-          Automated agent: this retro exposes tools via document.modelContext (WebMCP) and
-          window.freeretro. Call window.freeretro.help() in the console for usage.
+          自动化代理：此省思通过 document.modelContext (WebMCP) 和 window.freeretro 暴露工具。
+          在控制台中调用 window.freeretro.help() 查看用法。
         </p>
         {state.columns.map((column, index) => (
           <div
@@ -298,7 +294,7 @@ export function Board() {
       {demoActive && (
         <div className="border-cf-orange bg-cf-bg-card text-cf-orange fixed bottom-4 left-4 z-[10000] flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm">
           <span className="bg-cf-orange inline-block h-2 w-2 animate-pulse rounded-full" />
-          Demo mode
+          演示模式
         </div>
       )}
       <Footer />

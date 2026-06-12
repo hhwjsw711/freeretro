@@ -139,12 +139,12 @@ export class RetroRoom extends DurableObject<Env> {
 
   async fetch(request: Request): Promise<Response> {
     if (request.headers.get("Upgrade") !== "websocket") {
-      return new Response("Expected WebSocket", { status: 400 });
+      return new Response("需要 WebSocket 连接", { status: 400 });
     }
 
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId") ?? crypto.randomUUID();
-    const userName = url.searchParams.get("name") ?? "Anonymous";
+    const userName = url.searchParams.get("name") ?? "匿名";
     const color = USER_COLORS[this.colorIndex % USER_COLORS.length];
     this.colorIndex++;
 
@@ -170,7 +170,7 @@ export class RetroRoom extends DurableObject<Env> {
     this.broadcast({ type: "retro:deleted" });
 
     for (const ws of this.ctx.getWebSockets()) {
-      ws.close(1000, "Retro deleted");
+      ws.close(1000, "省思已删除");
     }
 
     await this.ctx.storage.deleteAll();

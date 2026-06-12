@@ -51,8 +51,8 @@ export function MoveCardMenu({ columns, currentColumnId, onMove }: MoveCardMenuP
         onClick={() => setIsOpen(!isOpen)}
         type="button"
         data-agent-control="move"
-        title="Move to column"
-        aria-label="Move card to another column"
+        title="移至其他列"
+        aria-label="将卡片移动到另一列"
         aria-haspopup="menu"
         aria-expanded={isOpen}
         className="text-cf-text-muted hover:text-cf-orange rounded px-1.5 py-0.5 text-xs opacity-0 transition-opacity group-hover:opacity-100"
@@ -65,7 +65,7 @@ export function MoveCardMenu({ columns, currentColumnId, onMove }: MoveCardMenuP
           <div
             ref={menuRef}
             role="menu"
-            aria-label="Move card to column"
+            aria-label="将卡片移动到列"
             className="border-cf-border bg-cf-bg-card fixed z-50 min-w-40 rounded-lg border p-1 shadow-lg"
             style={{ left: position.left, top: position.top }}
           >
