@@ -15,7 +15,12 @@ import { removeLocalRetro, saveLocalRetro } from "../localRetros";
 export function Board() {
   const { retroId } = useParams<{ retroId: string }>();
   const navigate = useNavigate();
-  const [name, setName] = useState(() => localStorage.getItem("retro-name") ?? "");
+  const isAutomated = typeof navigator !== "undefined" && navigator.webdriver === true;
+  const [name, setName] = useState(() => {
+    const stored = localStorage.getItem("retro-name");
+    if (stored) return stored;
+    return isAutomated ? "Agent" : "";
+  });
   const [showNamePrompt, setShowNamePrompt] = useState(!name);
   const [retro, setRetro] = useState<RetroSummary | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -34,7 +39,7 @@ export function Board() {
     setEmbodied,
     isEmbodied,
   } = useCursors(send, subscribe, userId, state.users, connected);
-  useAgentTools({ send, state, moveCursorTo, broadcastClick, setEmbodied, isEmbodied });
+  useAgentTools({ send, state, moveCursorTo, broadcastClick, setEmbodied, isEmbodied, setName });
   const demoActive = useDemoSwarm(retroId);
   const [copiedLink, setCopiedLink] = useState(false);
   const draggedCardIds = useMemo(() => new Set(drags.values()), [drags]);
@@ -188,6 +193,7 @@ export function Board() {
               type="button"
               onClick={() => setIsEditingTitle(true)}
               data-agent-control="title"
+              data-agent-prefer-api="rename_retro"
               title="重命名省思"
               className="text-cf-text hover:text-cf-orange text-left text-lg font-medium tracking-tight transition-colors"
             >
@@ -229,6 +235,7 @@ export function Board() {
           <button
             onClick={toggleBlur}
             data-agent-control="blur"
+            data-agent-prefer-api="set_blur"
             className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
           >
             {state.blurred ? "显示卡片" : "模糊卡片"}
@@ -236,6 +243,7 @@ export function Board() {
           <button
             onClick={toggleSort}
             data-agent-control="sort"
+            data-agent-prefer-api="set_sort"
             className="border-cf-border text-cf-text-muted hover:border-cf-orange hover:text-cf-orange rounded-full border px-4 py-1.5 text-sm transition-all"
           >
             {state.sortByUpvotes ? "手动排序" : "按票数排序"}
@@ -243,6 +251,7 @@ export function Board() {
           <button
             onClick={deleteRetro}
             data-agent-control="delete-retro"
+            data-agent-prefer-api="delete_retro"
             className="border-cf-border text-cf-text-muted rounded-full border px-4 py-1.5 text-sm transition-all hover:border-red-400 hover:text-red-500"
           >
             删除
@@ -256,8 +265,9 @@ export function Board() {
         className="relative grid flex-1 grid-cols-1 overflow-x-hidden overflow-y-auto p-4 md:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]"
       >
         <p className="sr-only">
-          自动化代理：此省思通过 document.modelContext (WebMCP) 和 window.freeretro 暴露工具。
-          在控制台中调用 window.freeretro.help() 查看用法。
+          自动化代理：优先使用 JavaScript 工具 API，而非浏览器点击和填充工具。 在浏览器控制台中调用
+          window.freeretro.help() 获取完整用法说明， 或访问 /llms.txt 获取完整的 API
+          参考。工具也可以通过 document.modelContext.executeTool(name, args) (WebMCP) 使用。
         </p>
         {state.columns.map((column, index) => (
           <div

@@ -25,6 +25,7 @@ export interface ToolContext {
   send: (msg: ClientMessage) => void;
   getState: () => BoardSnapshot;
   embodiment: Embodiment;
+  setName: (name: string) => void;
 }
 
 function ok(text: string): ToolResult {
@@ -58,7 +59,7 @@ const columnSchema = {
 };
 
 export function createTools(ctx: ToolContext): AgentTool[] {
-  const { send, getState, embodiment } = ctx;
+  const { send, getState, embodiment, setName } = ctx;
 
   return [
     {
@@ -271,6 +272,22 @@ export function createTools(ctx: ToolContext): AgentTool[] {
       execute: ({ sortByUpvotes }) => {
         send({ type: "sort:set", sortByUpvotes: Boolean(sortByUpvotes) });
         return ok(`已将 sortByUpvotes 设为 ${Boolean(sortByUpvotes)}。`);
+      },
+    },
+    {
+      name: "set_name",
+      description: "Set the display name others see for you in the retro.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Your display name." },
+        },
+        required: ["name"],
+      },
+      execute: ({ name }) => {
+        if (typeof name !== "string" || !name.trim()) return err("name is required.");
+        setName(name.trim());
+        return ok(`Set name to "${name.trim()}".`);
       },
     },
     {

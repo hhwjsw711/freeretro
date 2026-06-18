@@ -26,6 +26,11 @@ interface FreeRetroApi {
 declare global {
   interface Window {
     freeretro?: FreeRetroApi;
+    __agent?: {
+      instructions: string;
+      help: () => string | undefined;
+      api: string;
+    };
   }
 }
 
@@ -40,6 +45,7 @@ interface UseAgentToolsOptions {
   broadcastClick: (clientX: number, clientY: number) => void;
   setEmbodied: (value: boolean) => void;
   isEmbodied: () => boolean;
+  setName: (name: string) => void;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -81,6 +87,8 @@ export function useAgentTools(options: UseAgentToolsOptions) {
   setEmbodiedRef.current = options.setEmbodied;
   const isEmbodiedRef = useRef(options.isEmbodied);
   isEmbodiedRef.current = options.isEmbodied;
+  const setNameRef = useRef(options.setName);
+  setNameRef.current = options.setName;
   const modeRef = useRef<InteractionMode>("human");
 
   useEffect(() => {
@@ -134,6 +142,7 @@ export function useAgentTools(options: UseAgentToolsOptions) {
       send: (msg) => sendRef.current(msg),
       getState: () => stateRef.current,
       embodiment,
+      setName: (name) => setNameRef.current(name),
     });
     const unregister = registerTools(tools);
 
@@ -159,13 +168,24 @@ export function useAgentTools(options: UseAgentToolsOptions) {
       isEmbodied: () => isEmbodiedRef.current(),
     };
 
+    window.__agent = {
+      instructions:
+        "Favor window.freeretro.call(name, args) or document.modelContext.executeTool(name, args) over browser click/fill tools. Call window.freeretro.help() for the full tool list, or fetch /llms.txt.",
+      help: () => window.freeretro?.help(),
+      api: "/llms.txt",
+    };
+
     console.info(
-      "[freeretro] 代理工具就绪: document.modelContext (WebMCP) 或 window.freeretro.help()。模式: human (默认，可见光标) / direct。",
+      "[freeretro] 代理工具就绪。优先使用 window.freeretro.call(name, args) 而非浏览器点击/填充工具。\n" +
+        "  完整用法: window.freeretro.help()\n" +
+        "  API 参考: /llms.txt\n" +
+        "  WebMCP: document.modelContext.executeTool(name, args)",
     );
 
     return () => {
       unregister();
       delete window.freeretro;
+      delete window.__agent;
     };
   }, []);
 }
