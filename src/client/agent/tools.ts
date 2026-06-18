@@ -276,18 +276,18 @@ export function createTools(ctx: ToolContext): AgentTool[] {
     },
     {
       name: "set_name",
-      description: "Set the display name others see for you in the retro.",
+      description: "设置你在省思中对外显示的名称。",
       inputSchema: {
         type: "object",
         properties: {
-          name: { type: "string", description: "Your display name." },
+          name: { type: "string", description: "你的显示名称。" },
         },
         required: ["name"],
       },
       execute: ({ name }) => {
-        if (typeof name !== "string" || !name.trim()) return err("name is required.");
+        if (typeof name !== "string" || !name.trim()) return err("名称不能为空。");
         setName(name.trim());
-        return ok(`Set name to "${name.trim()}".`);
+        return ok(`已将名称设为 "${name.trim()}"。`);
       },
     },
     {
